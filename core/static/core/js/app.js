@@ -216,8 +216,16 @@
         if (i) setTimeout(() => i.focus(), 60);
       }
     };
-    fab.onclick = () => setOpen(panel.hidden);
-    if (close) close.onclick = () => setOpen(false);
+    fab.onclick = e => {
+      e.stopPropagation();
+      setOpen(panel.hidden);
+    };
+    if (close) {
+      close.onclick = e => {
+        e.stopPropagation();
+        setOpen(false);
+      };
+    }
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) setOpen(false); });
     document.addEventListener('click', e => {
       if (!panel.hidden && !w.contains(e.target)) setOpen(false);
