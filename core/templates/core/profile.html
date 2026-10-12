@@ -1,26 +1,27 @@
 {% extends 'core/base.html' %}{% load ui %}
 {% block heading %}{% t 'profile' %}{% endblock %}
 {% block content %}
-<p class="mu">{% t 'profNote' %}</p>
+<p class="mu">{% icon 'info' %} {% t 'profNote' %}</p>
 <form method="post" class="pf">
 {% csrf_token %}
 <div class="g g2" style="margin-top:12px">
   <div class="c">
+    <h3 class="sk-h">{% icon 'user' %} {% t 'profile' %}</h3>
     <label>{% t 'name' %}<input type="text" name="display_name" value="{{ profile.display_name }}" maxlength="60"></label>
     <label>{% t 'goal' %}<select name="goal">{% for k, l in goals %}<option value="{{ k }}" {% if profile.goal == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
     <label>{% t 'fmt' %}<select name="preferred_format">{% for k, l in formats %}<option value="{{ k }}" {% if profile.preferred_format == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
     <label>{% t 'hoursW' %}: <b>{{ profile.weekly_hours }}</b><input type="range" name="weekly_hours" min="1" max="30" value="{{ profile.weekly_hours }}" data-out></label>
   </div>
-  <div class="c"><h3>{% t 'interests' %}</h3>
+  <div class="c"><h3 class="sk-h">{% icon 'heart' %} {% t 'interests' %}</h3>
     <div class="chips">{% for i in interests %}<label class="chip"><input type="checkbox" name="interests" value="{{ i.id }}" {% if i.id in selected %}checked{% endif %}><span>{{ i.name }}</span></label>{% endfor %}</div>
   </div>
 </div>
-<div class="c" style="margin-top:14px"><div class="g g2">
+<div class="c" style="margin-top:14px"><h3 class="sk-h">{% icon 'target' %} {% t 'skills' %}</h3><div class="g g2">
   {% for us in skill_levels %}<div><b>{{ us.skill.name }}</b>
     <label>{% t 'curL' %}: <span>{{ us.current_level }}</span><input type="range" name="cur_{{ us.skill_id }}" min="0" max="5" value="{{ us.current_level }}" data-out></label>
     <label>{% t 'wantL' %}: <span>{{ us.desired_level }}</span><input type="range" name="want_{{ us.skill_id }}" min="0" max="5" value="{{ us.desired_level }}" data-out></label>
   </div>{% endfor %}
 </div></div>
-<button class="b" style="margin-top:14px">{% t 'saveP' %}</button>
+<button class="b" style="margin-top:14px">{% icon 'check' %} {% t 'saveP' %}</button>
 </form>
 {% endblock %}

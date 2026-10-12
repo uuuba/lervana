@@ -1,13 +1,13 @@
 {% extends 'core/base.html' %}{% load ui %}
 {% block heading %}{% t 'skills' %}{% endblock %}
 {% block content %}
-<p class="mu">{% t 'selfNote' %}</p>
+<p class="mu">{% icon 'info' %} {% t 'selfNote' %}</p>
 <div class="g g2" style="margin-top:12px">
 {% for r in rows %}
-  <div class="c"><h3>{{ r.us.skill.name }}</h3>
+  <div class="c"><h3 class="sk-h">{% icon 'target' %} {{ r.us.skill.name }}</h3>
     <div class="bar"><i style="width:{{ r.us.cur_pct }}%"></i><u style="left:{{ r.us.want_pct }}%"></u></div>
     <p class="mu">{{ r.us.current_level }} → {{ r.us.desired_level }} · {% t 'gapL' %}: {{ r.us.gap }}</p>
-    {% if r.best %}<div class="ac"><a class="b o" href="{% url 'core:course' r.best.id %}">{% t 'closeBy' r.best.title %}</a></div>{% endif %}
+    {% if r.best %}<div class="ac"><a class="b o" href="{% url 'core:course' r.best.id %}">{% icon 'rocket' %} {% t 'closeBy' r.best.title %}</a></div>{% endif %}
   </div>
 {% endfor %}
 </div>

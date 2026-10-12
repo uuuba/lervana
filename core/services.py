@@ -1,12 +1,16 @@
-"""Допоміжна бізнес-логіка: прогрес, статистика, відповіді асистента."""
+"""Допоміжна бізнес-логіка: прогрес, статистика, план, скидання даних.
+
+Відповіді «ШІ-агента» винесено в окремий модуль ``core.agent`` (там само
+працює база знань AgentKnowledge та збереження діалогу в ChatMessage).
+"""
 import math
 from datetime import timedelta
 
 from django.db.models import Count
 from django.utils import timezone
 
-from . import i18n, recommender
-from .models import Course, Enrollment, Module, ModuleProgress, Skill, UserSkill
+from . import i18n
+from .models import Enrollment, Module, ModuleProgress, Skill, UserSkill
 
 
 def ensure_user_skills(user):
@@ -73,31 +77,6 @@ def weekly_activity(user):
             counts[idx] += 1
     labels = i18n.tr('days').split(',')
     return [{'label': labels[i], 'n': n, 'h': n * 28 + 4} for i, n in enumerate(counts)]
-
-
-def assistant_answer(user, q):
-    """Демо-асистент: шаблонні відповіді на основі даних користувача (без AI-моделі)."""
-    done = completed_ids(progress_map(user))
-    recs = recommender.recommend(user, done)
-    if q == '1':
-        return f'«{recs[0].course.title}»: {recommender.why_text(recs[0])}' if recs else i18n.tr('emptyP')
-    if q == '2':
-        gaps = [us.skill.name for us in user.skill_levels.select_related('skill') if us.gap > 0]
-        return i18n.tr('a2', ', '.join(gaps)) if gaps else i18n.tr('noGap')
-    if q == '3':
-        active = [e.course for e in Enrollment.objects.filter(user=user).select_related('course')
-                  if e.course_id not in done]
-        if not active:
-            return i18n.tr('a3none')
-        hours = user.profile.weekly_hours
-        per = max(1, round(hours / len(active)))
-        return i18n.tr('a3', hours, '; '.join(f'«{c.title}» — {per} {i18n.tr("hrs")}' for c in active))
-    if q == '4':
-        if len(recs) < 2:
-            return i18n.tr('emptyP')
-        a, b = recs[0].course, recs[1].course
-        return i18n.tr('a4', a.title, a.duration_hours, i18n.tr(f'l{a.level}'), b.title, b.duration_hours, i18n.tr(f'l{b.level}'))
-    return i18n.tr('aFree')
 
 
 def est_weeks(course, weekly_hours):

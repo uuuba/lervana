@@ -2,19 +2,19 @@
 {% block heading %}{% t 'settings' %}{% endblock %}
 {% block content %}
 <div class="g g2">
-  <div class="c"><h3>{% t 'lang' %}</h3><div class="ac">
+  <div class="c"><h3 class="sk-h">{% icon 'globe' %} {% t 'lang' %}</h3><div class="ac">
     <a class="b {% if LANG != 'uk' %}o{% endif %}" href="{% url 'core:set_lang' 'uk' %}">Українська</a>
     <a class="b {% if LANG != 'en' %}o{% endif %}" href="{% url 'core:set_lang' 'en' %}">English</a>
   </div></div>
-  <div class="c"><h3>{% t 'theme' %}</h3><div class="ac">
-    <button type="button" class="b o" data-theme-set="light">{% t 'light' %}</button>
-    <button type="button" class="b o" data-theme-set="dark">{% t 'dark' %}</button>
+  <div class="c"><h3 class="sk-h">{% icon 'sun' %} {% t 'theme' %}</h3><div class="ac">
+    <button type="button" class="b o" data-theme-set="light">{% icon 'sun' %} {% t 'light' %}</button>
+    <button type="button" class="b o" data-theme-set="dark">{% icon 'moon' %} {% t 'dark' %}</button>
   </div></div>
   <div class="c"><form method="post">{% csrf_token %}<input type="hidden" name="action" value="reminders">
-    <label class="ck"><input type="checkbox" name="reminders" {% if profile.reminders %}checked{% endif %} onchange="this.form.submit()"> {% t 'remind' %}</label></form></div>
+    <label class="ck"><input type="checkbox" name="reminders" {% if profile.reminders %}checked{% endif %} onchange="this.form.submit()"> {% icon 'bell' %} {% t 'remind' %}</label></form></div>
   <div class="c ac">
-    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="reset"><button class="b o">{% t 'reset' %}</button></form>
-    <form method="post" action="{% url 'core:logout' %}" class="inline">{% csrf_token %}<button class="b o">{% t 'logout' %}</button></form>
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="reset"><button class="b o">{% icon 'refresh' %} {% t 'reset' %}</button></form>
+    <form method="post" action="{% url 'core:logout' %}" class="inline">{% csrf_token %}<button class="b o">{% icon 'arrow_r' %} {% t 'logout' %}</button></form>
   </div>
 </div>
 {% endblock %}

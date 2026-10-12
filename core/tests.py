@@ -88,3 +88,98 @@ class ViewTests(BaseTest):
         r = self.client.post(reverse('core:assistant_ask'), '{"q": "2"}', content_type='application/json')
         self.assertIn('answer', r.json())
         self.assertGreaterEqual(services.streak(self.user), 0)
+
+
+class AgentTests(BaseTest):
+    """«ШІ-агент»: пародія, що відповідає виключно з бази даних."""
+
+    def test_counts_come_from_database(self):
+        from core import agent
+        ans = agent.ask(self.user, 'Скільки курсів у каталозі?')
+        self.assertEqual(ans.source, 'db')
+        self.assertIn(str(Course.objects.filter(is_published=True).count()), ans.text)
+        self.assertTrue({'course'} <= set(ans.tables))
+
+    def test_recommendation_uses_recommender(self):
+        from core import agent
+        ans = agent.ask(self.user, 'Що мені рекомендують?')
+        self.assertEqual(ans.source, 'db')
+        self.assertIn('%', ans.text)
+
+    def test_knowledge_base_fallback(self):
+        from core import agent
+        ans = agent.ask(self.user, 'Хто ти такий взагалі?')
+        self.assertEqual(ans.source, 'kb')
+        self.assertIn('пародія', ans.text.lower())
+
+    def test_unknown_question_falls_back(self):
+        from core import agent
+        ans = agent.ask(self.user, 'qqqqzzzz незрозуміле запитання')
+        self.assertEqual(ans.source, 'fallback')
+
+    def test_dialogue_saved_to_database(self):
+        from core import agent
+        from core.models import ChatMessage, ChatSession
+        agent.ask(self.user, 'Скільки курсів у каталозі?')
+        agent.save_dialogue(self.user, 'test-key', 'Скільки курсів?', agent.ask(self.user, 'Скільки курсів у каталозі?'))
+        self.assertTrue(ChatSession.objects.filter(user=self.user).exists())
+        self.assertGreaterEqual(ChatMessage.objects.filter(session__user=self.user).count(), 2)
+
+    def test_ask_endpoint_and_history(self):
+        r = self.client.post(reverse('core:assistant_ask'), '{"text": "Скільки курсів у каталозі"}',
+                              content_type='application/json', HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        data = r.json()
+        self.assertIn('answer', data)
+        self.assertEqual(data['source'], 'db')
+        h = self.client.get(reverse('core:assistant_history')).json()
+        self.assertGreaterEqual(len(h['messages']), 2)
+        self.client.post(reverse('core:assistant_clear'))
+        self.assertEqual(len(self.client.get(reverse('core:assistant_history')).json()['messages']), 0)
+
+    def test_anonymous_agent_answers_from_public_tables(self):
+        self.client.logout()
+        r = self.client.post(reverse('core:assistant_ask'), '{"text": "Скільки курсів у каталозі"}',
+                              content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('answer', r.json())
+
+
+class WidgetTests(BaseTest):
+    """Плаваючий віджет «порадитись з агентом» присутній на кожній сторінці."""
+
+    def test_widget_on_all_pages(self):
+        names = ['dashboard', 'explore', 'recommendations', 'plan', 'skills', 'progress', 'saved',
+                 'assistant', 'profile', 'settings']
+        for n in names:
+            r = self.client.get(reverse('core:' + n))
+            self.assertContains(r, 'id="agentw"', msg_prefix=n)
+        self.assertContains(self.client.get(reverse('core:course', args=[2])), 'id="agentw"')
+
+    def test_widget_on_auth_pages(self):
+        self.client.logout()
+        self.assertContains(self.client.get(reverse('core:login')), 'id="agentw"')
+        self.assertContains(self.client.get(reverse('core:register')), 'id="agentw"')
+
+    def test_chips_are_loaded_from_knowledge_base(self):
+        from core.models import AgentKnowledge
+        self.assertTrue(AgentKnowledge.objects.filter(is_active=True).exists())
+        r = self.client.get(reverse('core:assistant'))
+        self.assertContains(r, 'js-q')
+
+
+class RoutingTests(BaseTest):
+    """Маршрутизація: namespace core, generic views, жодного зайвого редіректу."""
+
+    def test_namespaced_urls(self):
+        from django.urls import NoReverseMatch, reverse
+        for name in ('dashboard', 'explore', 'assistant', 'profile', 'settings'):
+            self.assertTrue(reverse('core:' + name).startswith('/'))
+        with self.assertRaises(NoReverseMatch):
+            reverse('dashboard')
+
+    def test_views_are_classes(self):
+        from core import views
+        from django.views.generic import View
+        for name in ('DashboardView', 'ExploreView', 'CourseDetailView', 'ProfileView',
+                     'AssistantAskView', 'RegisterView'):
+            self.assertTrue(issubclass(getattr(views, name), View), name)

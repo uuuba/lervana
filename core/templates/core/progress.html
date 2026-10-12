@@ -1,10 +1,10 @@
 {% extends 'core/base.html' %}{% load ui %}
 {% block heading %}{% t 'prog' %}{% endblock %}
 {% block content %}
-<div class="c"><h3>{% t 'overall' %}</h3><div class="bar"><i style="width:{{ overall }}%"></i></div><p class="mu">{{ overall }}%</p></div>
+<div class="c"><h3 class="sk-h">{% icon 'pie' %} {% t 'overall' %}</h3><div class="bar"><i style="width:{{ overall }}%"></i></div><p class="mu">{{ overall }}%</p></div>
 <div class="g g2" style="margin-top:14px">
-  {% for it in items %}<div class="c"><h3>{{ it.course.title }}</h3><div class="bar"><i style="width:{{ it.pct }}%"></i></div><p class="mu">{{ it.pct }}%</p></div>{% endfor %}
+  {% for it in items %}<div class="c"><h3 class="sk-h">{% icon 'book' %} {{ it.course.title }}</h3><div class="bar"><i style="width:{{ it.pct }}%"></i></div><p class="mu">{{ it.pct }}%</p></div>{% empty %}<div class="c em"><div class="si">{% icon 'trend' %}</div><p>{% t 'agNoProgress' %}</p><a class="b" href="{% url 'core:explore' %}">{% icon 'compass' %} {% t 'explore' %}</a></div>{% endfor %}
 </div>
-<h2 class="sec">{% t 'activity' %}</h2>
+<h2 class="sec">{% icon 'calendar' %} {% t 'activity' %}</h2>
 <div class="c ch">{% for d in week %}<div title="{{ d.n }}"><i style="height:{{ d.h }}px"></i><small>{{ d.label }}</small></div>{% endfor %}</div>
 {% endblock %}
