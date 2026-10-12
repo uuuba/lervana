@@ -4,29 +4,37 @@
 {% t profile.goal as goal_text %}
 <section class="hero">
   <div class="hero-user">
-    <img class="hero-photo" src="{% static 'core/img/avatars/demo-user.jpg' %}" alt="Demo avatar">
+    <img class="hero-photo" src="{% static 'core/img/avatars/demo-user.jpg' %}" alt="{{ profile.shown_name }}">
     <div><h1>{% t 'hello' profile.shown_name %}</h1><p class="mu">{% t 'goalSum' goal_text profile.weekly_hours %}</p></div>
   </div>
-  <a class="b" href="{% url 'recommendations' %}">{% t 'viewRecs' %}</a>
+  <div class="hero-act">
+    <a class="b gh" href="{% url 'core:recommendations' %}">{% icon 'spark' %} {% t 'viewRecs' %}</a>
+    <a class="b gh o" href="{% url 'core:assistant' %}">{% icon 'bot' %} {% t 'agentShort' %}</a>
+  </div>
 </section>
 <div class="g g4">
   <div class="c st"><div class="si">{% icon 'spark' %}</div><b data-n="{{ rec_count }}">{{ rec_count }}</b><span>{% t 'stRec' %}</span></div>
   <div class="c st"><div class="si">{% icon 'clock' %}</div><b data-n="{{ hours }}">{{ hours }}</b><span>{% t 'stHrs' %}</span></div>
-  <div class="c st"><div class="si">{% icon 'check' %}</div><b data-n="{{ done_count }}">{{ done_count }}</b><span>{% t 'stDone' %}</span></div>
+  <div class="c st"><div class="si">{% icon 'check_c' %}</div><b data-n="{{ done_count }}">{{ done_count }}</b><span>{% t 'stDone' %}</span></div>
   <div class="c st"><div class="si">{% icon 'flame' %}</div><b data-n="{{ streak }}">{{ streak }}</b><span>{% t 'stStreak' %}</span></div>
 </div>
-<h2 class="sec">{% t 'recs' %}</h2>
+
+<h2 class="sec">{% icon 'spark' %} {% t 'recs' %}</h2>
 {% if recs %}<div class="g g2">{% for rec in recs %}{% include 'core/_card.html' %}{% endfor %}</div>{% else %}{% include 'core/_empty.html' %}{% endif %}
+
 <div class="g g2">
-  <div><h2 class="sec">{% t 'cont' %}</h2><div class="c">
-    {% for it in in_progress %}<div class="mn"><b>{{ it.course.title }}</b><div class="bar"><i style="width:{{ it.pct }}%"></i></div><div><a class="b o" href="{% url 'plan' %}">{% t 'resume' %}</a></div></div>{% empty %}{% t 'none' %}{% endfor %}
+  <div><h2 class="sec">{% icon 'play' %} {% t 'cont' %}</h2><div class="c">
+    {% for it in in_progress %}<div class="mn"><b>{{ it.course.title }}</b><div class="bar"><i style="width:{{ it.pct }}%"></i></div><div><a class="b o" href="{% url 'core:plan' %}">{% t 'resume' %}</a></div></div>{% empty %}{% t 'none' %}{% endfor %}
   </div></div>
-  <div><h2 class="sec">{% t 'compT' %}</h2><div class="c">
+  <div><h2 class="sec">{% icon 'target' %} {% t 'compT' %}</h2><div class="c">
     {% for us in skill_levels %}<div class="sr"><span>{{ us.skill.name }}</span><div class="bar"><i style="width:{{ us.cur_pct }}%"></i><u style="left:{{ us.want_pct }}%"></u></div><small>{{ us.current_level }}→{{ us.desired_level }}</small></div>{% endfor %}
   </div></div>
-  <div><h2 class="sec">{% t 'weekly' %}</h2><div class="c"><div class="bar"><i style="width:{{ week_pct }}%"></i></div><p class="mu">{% t 'weeklyTxt' week_hours profile.weekly_hours %}</p></div></div>
-  <div><h2 class="sec">{% t 'viewed' %}</h2><div class="c">{% for c in recent %}<a class="lk" href="{% url 'course' c.id %}">{{ c.title }}</a>{% empty %}{% t 'none' %}{% endfor %}</div></div>
+  <div><h2 class="sec">{% icon 'calendar' %} {% t 'weekly' %}</h2><div class="c"><div class="bar"><i style="width:{{ week_pct }}%"></i></div><p class="mu">{% t 'weeklyTxt' week_hours profile.weekly_hours %}</p></div></div>
+  <div><h2 class="sec">{% icon 'history' %} {% t 'viewed' %}</h2><div class="c rv-list">
+    {% for c in recent %}<a class="rv" href="{% url 'core:course' c.id %}"><span class="rv-th">{% cover c %}</span><span class="min"><b>{{ c.title }}</b><small>{{ c.category.name }} · {{ c.duration_hours }} {% t 'hrs' %}</small></span></a>{% empty %}{% t 'none' %}{% endfor %}
+  </div></div>
 </div>
-<h2 class="sec">{% t 'insight' %}</h2>
-<div class="c">{% if gap %}{% t 'insightTxt' gap.skill.name gap.cur gap.want gap.course.title %}{% else %}{% t 'noGap' %}{% endif %}</div>
+
+<h2 class="sec">{% icon 'lightbulb' %} {% t 'insight' %}</h2>
+<div class="c insight">{% if gap %}{% t 'insightTxt' gap.skill.name gap.cur gap.want gap.course.title %}{% else %}{% t 'noGap' %}{% endif %}</div>
 {% endblock %}

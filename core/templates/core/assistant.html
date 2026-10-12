@@ -1,9 +1,51 @@
 {% extends 'core/base.html' %}{% load ui %}
 {% block heading %}{% t 'assistant' %}{% endblock %}
 {% block content %}
-<p class="mu">{% t 'asstNote' %}</p>
-<div class="c chat" id="chat" style="margin-top:12px"></div>
-<div class="chips" style="margin:12px 0">{% for v, l in questions %}<button type="button" class="chip js-q" data-q="{{ v }}">{{ l }}</button>{% endfor %}</div>
-<div class="ac">{% t 'ask' as ph %}<input id="ai" type="text" placeholder="{{ ph }}"><button type="button" class="b" id="send">{% t 'send' %}</button></div>
-<div id="chat-cfg" data-url="{% url 'assistant_ask' %}" hidden></div>
+<div class="ag-page">
+  <section class="c ag-card">
+    <header class="ag-head">
+      <span class="ag-av">{% icon 'bot' %}</span>
+      <div class="min"><h3>Learnova {% t 'agentShort' %}</h3><small class="ag-dot">{% t 'agentOnline' %}</small></div>
+      <span class="tg ag-beta">AI-free</span>
+    </header>
+
+    <div class="chat" id="chat">
+      {% for m in history %}
+      <div class="msg {{ m.role|slice:':1' }}"><span class="msg-in">{{ m.content }}</span>
+        {% if m.role == 'agent' %}<span class="msg-src">{% if m.source == 'kb' %}{% t 'srcKb' %}{% elif m.source == 'fallback' %}{% t 'srcFallback' %}{% else %}{% t 'srcDb' %}{% endif %}</span>{% endif %}
+      </div>
+      {% empty %}
+      <div class="msg a"><span class="msg-in">{% t 'agEmptyState' %}</span><span class="msg-src">{% t 'srcDb' %}</span></div>
+      {% endfor %}
+    </div>
+
+    <div class="chips" id="ag-chips">{% for c in chips %}<button type="button" class="chip js-q" data-q="{{ c }}">{{ c }}</button>{% endfor %}</div>
+
+    <form class="ac ag-form" id="ag-form" autocomplete="off">
+      <label class="sb ag-sb">{% icon 'chat' %}<input id="ai" type="text" maxlength="400" placeholder="{% t 'askShort' %}" aria-label="{% t 'askShort' %}"></label>
+      <button class="b" type="submit">{% icon 'send' %} {% t 'send' %}</button>
+    </form>
+    <p class="mu ag-meta">{% t 'agentPageNote' %}
+      <button type="button" class="agw-clear" id="ag-clear">{% t 'agentClear' %}</button>
+    </p>
+  </section>
+
+  <aside class="ag-side">
+    <div class="c">
+      <div class="si">{% icon 'database' %}</div>
+      <h3>{% t 'agDbTitle' %}</h3>
+      <p class="mu">{% t 'agDbText' %}</p>
+      <p class="code-chip">{{ ag_tables }}</p>
+    </div>
+    <div class="c">
+      <div class="si alt">{% icon 'puzzle' %}</div>
+      <h3>{% t 'agKbTitle' %}</h3>
+      <p class="mu">{% t 'agKbText' %}</p>
+      <p class="mu">{% t 'agentNote' %}</p>
+    </div>
+  </aside>
+</div>
+<div id="chat-cfg" data-url="{% url 'core:assistant_ask' %}" data-clear="{% url 'core:assistant_clear' %}"
+     data-src-db="{% t 'srcDb' %}" data-src-kb="{% t 'srcKb' %}" data-src-fallback="{% t 'srcFallback' %}"
+     data-typing="{% t 'agentTyping' %}" data-err="{% t 'agentErr' %}" hidden></div>
 {% endblock %}

@@ -4,13 +4,14 @@
 {% if needs_profile %}{% include 'core/_empty.html' %}{% else %}
 <form class="c fl" method="get">
   <input type="hidden" name="q" value="{{ flt.q }}">
-  <label>{% t 'cat' %}<select name="cat" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for i in interests %}<option value="{{ i.key }}" {% if flt.cat == i.key %}selected{% endif %}>{{ i.name }}</option>{% endfor %}</select></label>
-  <label>{% t 'lvl' %}<select name="lvl" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in levels %}<option value="{{ v }}" {% if flt.lvl == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
-  <label>{% t 'dur' %}<select name="dur" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in durations %}<option value="{{ v }}" {% if flt.dur == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
-  <label>{% t 'fmt' %}<select name="fmt" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in formats %}<option value="{{ v }}" {% if flt.fmt == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
-  <label>{% t 'skill' %}<select name="skill" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for s in skills %}<option value="{{ s.key }}" {% if flt.skill == s.key %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></label>
+  <label>{% icon 'layers' %}<span>{% t 'cat' %}</span><select name="cat" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for i in interests %}<option value="{{ i.key }}" {% if flt.cat == i.key %}selected{% endif %}>{{ i.name }}</option>{% endfor %}</select></label>
+  <label>{% icon 'signal' %}<span>{% t 'lvl' %}</span><select name="lvl" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in levels %}<option value="{{ v }}" {% if flt.lvl == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+  <label>{% icon 'clock' %}<span>{% t 'dur' %}</span><select name="dur" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in durations %}<option value="{{ v }}" {% if flt.dur == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+  <label>{% icon 'terminal' %}<span>{% t 'fmt' %}</span><select name="fmt" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for v, n in formats %}<option value="{{ v }}" {% if flt.fmt == v %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+  <label>{% icon 'bolt' %}<span>{% t 'skill' %}</span><select name="skill" onchange="this.form.submit()"><option value="">{% t 'any' %}</option>{% for s in skills %}<option value="{{ s.key }}" {% if flt.skill == s.key %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></label>
   <label class="ck"><input type="checkbox" name="mine" value="1" {% if flt.mine %}checked{% endif %} onchange="this.form.submit()"> {% t 'mine' %}</label>
 </form>
-<div class="g g2">{% for rec in recs %}{% include 'core/_card.html' %}{% empty %}<div class="c">{% t 'nores' %}</div>{% endfor %}</div>
+<p class="mu found">{% icon 'filter' %} {% t 'found' recs|length %}</p>
+<div class="g g2">{% for rec in recs %}{% include 'core/_card.html' %}{% empty %}<div class="c em"><div class="si">{% icon 'search' %}</div><p>{% t 'nores' %}</p></div>{% endfor %}</div>
 {% endif %}
 {% endblock %}

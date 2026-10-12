@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="csrf" content="{{ csrf_token }}">
+<meta name="description" content="{% t 'tag' %}">
 <title>Learnova</title>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('ln-t')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,27 +13,44 @@
 </head>
 <body>
 <div id="auth">
-  <div class="lang">
-    <a class="ib" href="{% url 'set_lang' 'uk' %}" aria-pressed="{% if LANG == 'uk' %}true{% else %}false{% endif %}">UA</a>
-    <a class="ib" href="{% url 'set_lang' 'en' %}" aria-pressed="{% if LANG == 'en' %}true{% else %}false{% endif %}">EN</a>
+  <div class="auth-art" aria-hidden="true">
+    <div class="auth-art-in">
+      <div class="logo"><i>{% icon 'spark' %}</i>Learnova</div>
+      <h2 class="auth-tag">{% t 'tag' %}</h2>
+      <ul class="auth-points">
+        <li>{% icon 'target' %}<span>{% t 'recs' %}</span></li>
+        <li>{% icon 'trend' %}<span>{% t 'prog' %}</span></li>
+        <li>{% icon 'bot' %}<span>{% t 'agentOpen' %}</span></li>
+      </ul>
+      <div class="auth-photo"><img src="{% static 'core/img/covers/web.jpg' %}" alt=""></div>
+    </div>
   </div>
-  <div class="box">
-    <div class="logo"><i>{% icon 'spark' %}</i>Learnova</div>
-    <p class="mu">{% t 'tag' %}</p>
-    <h1 style="margin-top:16px">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</h1>
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-      {% for f in form %}<label>{{ f.label }}{{ f }}</label>{{ f.errors }}{% endfor %}
-      {{ form.non_field_errors }}
-      <button class="b" style="width:100%;margin-top:18px;justify-content:center">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</button>
-    </form>
-    {% if mode == 'login' %}
-      <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'register' %}">{% t 'toReg' %}</a>
-    {% else %}
-      <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'login' %}">{% t 'toLog' %}</a>
-    {% endif %}
+
+  <div class="auth-form">
+    <div class="lang">
+      <a class="ib" href="{% url 'core:set_lang' 'uk' %}" aria-pressed="{% if LANG == 'uk' %}true{% else %}false{% endif %}">UA</a>
+      <a class="ib" href="{% url 'core:set_lang' 'en' %}" aria-pressed="{% if LANG == 'en' %}true{% else %}false{% endif %}">EN</a>
+    </div>
+    <div class="box">
+      <div class="logo"><i>{% icon 'spark' %}</i>Learnova</div>
+      <p class="mu">{% t 'tag' %}</p>
+      <h1 style="margin-top:16px">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</h1>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        {% for f in form %}<label>{{ f.label }}{{ f }}</label>{{ f.errors }}{% endfor %}
+        {{ form.non_field_errors }}
+        <button class="b" style="width:100%;margin-top:18px;justify-content:center">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</button>
+      </form>
+      {% if mode == 'login' %}
+        <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'core:register' %}">{% t 'toReg' %}</a>
+      {% else %}
+        <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'core:login' %}">{% t 'toLog' %}</a>
+      {% endif %}
+    </div>
   </div>
 </div>
+{% include 'core/_agent_widget.html' %}
+<script src="{% static 'core/js/app.js' %}"></script>
 </body>
 </html>

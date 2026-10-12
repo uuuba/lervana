@@ -3,7 +3,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const root = document.documentElement;
-  const csrf = () => $('meta[name=csrf]').content;
+  const csrf = () => ($('meta[name=csrf]') || {content: ''}).content;
   const post = (url, body) => fetch(url, {
     method: 'POST',
     headers: {'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
@@ -14,6 +14,7 @@
   let tt;
   function toast(msg, err) {
     const x = $('#toast');
+    if (!x) return;
     x.textContent = msg;
     x.className = 'on' + (err ? ' er' : '');
     clearTimeout(tt);
@@ -48,6 +49,11 @@
   const menuBtn = $('#mb');
   const side = $('#side');
   if (menuBtn && side) menuBtn.onclick = () => side.classList.toggle('open');
+  document.addEventListener('click', e => {
+    if (side && side.classList.contains('open') && !side.contains(e.target) && e.target.closest('#mb') === null) {
+      side.classList.remove('open');
+    }
+  });
 
   /* сповіщення */
   const np = $('#np'), bell = $('#bl');
@@ -56,7 +62,7 @@
       e.stopPropagation();
       np.hidden = !np.hidden;
       const badge = $('#bd');
-      if (!np.hidden && !badge.hidden) post(np.dataset.url).then(() => (badge.hidden = true));
+      if (!np.hidden && badge && !badge.hidden) post(np.dataset.url).then(() => (badge.hidden = true));
     };
     document.addEventListener('click', e => { if (np && !np.contains(e.target)) np.hidden = true; });
   }
@@ -68,7 +74,8 @@
     post(b.dataset.url).then(d => {
       b.classList.toggle('sv', d.saved);
       b.setAttribute('aria-pressed', d.saved);
-      $('span', b).textContent = d.label;
+      const label = $('span', b);
+      if (label) label.textContent = d.label;
       toast(d.msg);
     });
   });
@@ -100,29 +107,120 @@
     })(s);
   });
 
-  /* асистент (демо-режим) */
-  const chat = $('#chat');
-  if (chat) {
-    const url = $('#chat-cfg').dataset.url;
-    const add = (cls, content) => {
+  /* ================= «ШІ-агент»: чат ================= */
+  function makeChat(cfg) {
+    const body = $(cfg.body), form = $(cfg.form), input = cfg.input ? $(cfg.input) : null;
+    if (!body || !form) return null;
+    const typing = cfg.typing || '…';
+
+    const add = (cls, content, srcLabel) => {
       const d = document.createElement('div');
       d.className = 'msg ' + cls;
-      d.append(content);
-      chat.append(d);
+      const text = document.createElement('span');
+      text.className = 'msg-in';
+      text.textContent = content;
+      d.append(text);
+      if (srcLabel) {
+        const s = document.createElement('span');
+        s.className = 'msg-src';
+        s.textContent = srcLabel;
+        d.append(s);
+      }
+      body.append(d);
+      body.scrollTop = body.scrollHeight;
       return d;
     };
-    const ask = async (label, payload) => {
-      add('u', label);
+
+    const send = async text => {
+      add('u', text);
       const dots = document.createElement('span');
       dots.className = 'dots';
       dots.innerHTML = '<i></i><i></i><i></i>';
-      const m = add('a', dots);
-      const [d] = await Promise.all([post(url, payload), new Promise(r => setTimeout(r, 800))]);
-      m.textContent = d.answer;
+      const pending = add('a', '');
+      pending.querySelector('.msg-in').append(dots);
+      try {
+        const d = await post(cfg.ask, {text: text, q: text});
+        pending.querySelector('.msg-in').textContent = d.answer || '';
+        if (d.label) {
+          const s = document.createElement('span');
+          s.className = 'msg-src';
+          s.textContent = d.label;
+          pending.append(s);
+        }
+      } catch (e) {
+        pending.querySelector('.msg-in').textContent = cfg.err || '…';
+      }
+      body.scrollTop = body.scrollHeight;
     };
-    $$('.js-q').forEach(b => (b.onclick = () => ask(b.textContent, {q: b.dataset.q})));
-    const send = () => { const i = $('#ai'), v = i.value.trim(); if (v) { i.value = ''; ask(v, {text: v}); } };
-    $('#send').onclick = send;
-    $('#ai').onkeydown = e => { if (e.key === 'Enter') send(); };
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!input) return;
+      const v = input.value.trim();
+      if (!v) return;
+      input.value = '';
+      send(v);
+    });
+
+    $$(cfg.chipSel || '.js-q', body.parentNode).forEach(b => {
+      b.onclick = () => send((b.dataset.q || b.textContent).trim());
+    });
+
+    const clearBtn = $(cfg.clear);
+    if (clearBtn && cfg.clearUrl) {
+      clearBtn.onclick = () => post(cfg.clearUrl).then(() => { body.innerHTML = ''; toast(clearBtn.textContent); });
+    }
+    return {add, send};
+  }
+
+  /* ---- діалог на сторінці «Асистент» ---- */
+  const chatCfg = $('#chat-cfg');
+  if (chatCfg) {
+    makeChat({
+      body: '#chat', form: '#ag-form', input: '#ai', ask: chatCfg.dataset.url,
+      clearUrl: chatCfg.dataset.clear, clear: '#ag-clear', chipSel: '.js-q',
+      typing: chatCfg.dataset.typing, err: chatCfg.dataset.err,
+      srcDb: chatCfg.dataset.srcDb, srcKb: chatCfg.dataset.srcKb, srcFallback: chatCfg.dataset.srcFallback
+    });
+  }
+
+  /* ---- плаваючий віджет «порадитись з агентом» (кожна сторінка) ---- */
+  const w = $('#agentw');
+  if (w) {
+    const panel = $('#agw-panel'), fab = $('#agw-fab'), close = $('#agw-close'), body = $('#agw-body');
+    let opened = false, loaded = false;
+    const chat = makeChat({
+      body: '#agw-body', form: '#agw-form', input: '#agw-input', ask: w.dataset.ask,
+      clearUrl: w.dataset.clear, clear: '#agw-clear', chipSel: '.js-agq',
+      typing: w.dataset.typing, err: w.dataset.err,
+      srcDb: w.dataset.srcDb, srcKb: w.dataset.srcKb, srcFallback: w.dataset.srcFallback
+    });
+
+    const labelFor = code => ({db: w.dataset.srcDb, kb: w.dataset.srcKb, fallback: w.dataset.srcFallback})[code] || w.dataset.srcDb;
+    const loadHistory = () => fetch(w.dataset.hist, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(r => r.json())
+      .then(d => {
+        const rows = (d && d.messages) || [];
+        if (!rows.length || !chat) return;
+        body.innerHTML = '';
+        rows.forEach(m => chat.add(m.role === 'user' ? 'u' : 'a', m.content, m.role === 'agent' ? labelFor(m.source) : ''));
+      }).catch(() => { /* ignore */ });
+
+    const setOpen = open => {
+      panel.hidden = !open;
+      fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+      w.classList.toggle('on', open);
+      if (open) {
+        if (!loaded) { loaded = true; loadHistory(); }
+        const i = $('#agw-input');
+        if (i) setTimeout(() => i.focus(), 60);
+      }
+    };
+    fab.onclick = () => setOpen(panel.hidden);
+    if (close) close.onclick = () => setOpen(false);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) setOpen(false); });
+    document.addEventListener('click', e => {
+      if (!panel.hidden && !w.contains(e.target)) setOpen(false);
+    });
   }
 })();

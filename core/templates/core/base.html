@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf" content="{{ csrf_token }}">
-<title>Learnova</title>
+<meta name="description" content="{% t 'tag' %}">
+<title>{% block title %}Learnova{% endblock %}</title>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('ln-t')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,32 +13,42 @@
 </head>
 <body>
 <aside id="side">
-  <div class="logo"><i>{% icon 'spark' %}</i>Learnova</div>
+  <a class="logo" href="{% url 'core:dashboard' %}"><i>{% icon 'spark' %}</i>Learnova</a>
   <nav aria-label="Main">
-    {% for url, key, ico in NAV %}<a class="nv {% if nav_active == url %}on{% endif %}" href="{% url url %}">{% icon ico %} {% t key %}</a>{% endfor %}
+    {% for url, key, ico, act in NAV %}<a class="nv {% if nav_active == act %}on{% endif %}" href="{% url url %}">{% icon ico %} <span>{% t key %}</span></a>{% endfor %}
   </nav>
+  {% if user.is_authenticated %}
+  <div class="side-card">
+    <div class="side-user">
+      <img class="hero-photo" src="{% static 'core/img/avatars/demo-user.jpg' %}" alt="{{ user.username }}">
+      <div class="min"><b>{{ user.profile.shown_name }}</b><small>@{{ user.username }}</small></div>
+    </div>
+    <a class="b o side-ag" href="{% url 'core:assistant' %}">{% icon 'bot' %} {% t 'agentOpen' %}</a>
+  </div>
+  {% endif %}
 </aside>
 <div class="shell">
 <header>
   <button class="ib" id="mb" type="button" aria-label="Menu">{% icon 'menu' %}</button>
   <h2>{% block heading %}{% endblock %}</h2>
-  <form method="get" action="{% url 'explore' %}">{% t 'search' as ph %}
+  <form method="get" action="{% url 'core:explore' %}">{% t 'search' as ph %}
     <label class="sb">{% icon 'search' %}<input id="q" type="search" name="q" placeholder="{{ ph }}" aria-label="{{ ph }}" value="{{ request.GET.q }}"></label>
   </form>
-  <a class="ib" href="{% url 'set_lang' 'uk' %}" aria-pressed="{% if LANG == 'uk' %}true{% else %}false{% endif %}">UA</a>
-  <a class="ib" href="{% url 'set_lang' 'en' %}" aria-pressed="{% if LANG == 'en' %}true{% else %}false{% endif %}">EN</a>
+  <a class="ib lang" href="{% url 'core:set_lang' 'uk' %}" aria-pressed="{% if LANG == 'uk' %}true{% else %}false{% endif %}">UA</a>
+  <a class="ib lang" href="{% url 'core:set_lang' 'en' %}" aria-pressed="{% if LANG == 'en' %}true{% else %}false{% endif %}">EN</a>
   <button class="ib" id="tb" type="button" aria-label="Theme"></button>
   <button class="ib" id="bl" type="button" aria-label="Notifications">{% icon 'bell' %}<span id="bd" {% if not unread %}hidden{% endif %}>{{ unread }}</span></button>
-  <a class="ib profile-link" href="{% url 'profile' %}" aria-label="Profile">
-    <img class="profile-avatar" src="{% static 'core/img/avatars/demo-user.jpg' %}" alt="Demo avatar">
+  <a class="ib profile-link" href="{% url 'core:profile' %}" aria-label="Profile">
+    <img class="profile-avatar" src="{% static 'core/img/avatars/demo-user.jpg' %}" alt="Avatar">
   </a>
-  <div id="np" hidden data-url="{% url 'notifications_read' %}">
+  <div id="np" hidden data-url="{% url 'core:notifications_read' %}">
     <h3>{% t 'notif' %}</h3>
     {% for n in notifications %}<p>{{ n.message }}</p>{% empty %}<p>{% t 'noNotif' %}</p>{% endfor %}
   </div>
 </header>
 <main><div id="v" class="an">{% block content %}{% endblock %}</div></main>
 </div>
+{% include 'core/_agent_widget.html' %}
 <div id="toast" role="status"></div>
 {% for m in messages %}<div class="js-msg" data-level="{{ m.level_tag }}">{{ m }}</div>{% endfor %}
 <template id="ic-sun">{% icon 'sun' %}</template><template id="ic-moon">{% icon 'moon' %}</template>

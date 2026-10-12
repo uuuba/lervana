@@ -14,13 +14,13 @@ def t(key, *args):
 
 
 @register.simple_tag
-def icon(name):
-    return mark_safe(icons.svg(name))
+def icon(name, cls='ic'):
+    return mark_safe(icons.svg(name, cls))
 
 
 @register.simple_tag
 def cover(course):
-    return mark_safe(icons.cover(course.id, course.category.key))
+    return mark_safe(icons.cover(course.id, course.art_key))
 
 
 @register.simple_tag
@@ -31,3 +31,9 @@ def why(rec):
 @register.filter
 def level_name(value):
     return i18n.tr(f'l{value}')
+
+
+@register.filter
+def fmt_icon(value):
+    """Іконка формату курсу: відео / практика / текст."""
+    return {'vid': 'play', 'prac': 'terminal', 'txt': 'book'}.get(value, 'book')

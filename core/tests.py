@@ -38,53 +38,53 @@ class RecommenderTests(BaseTest):
 class ViewTests(BaseTest):
     def test_login_required(self):
         self.client.logout()
-        self.assertRedirects(self.client.get(reverse('dashboard')), '/login/?next=/')
+        self.assertRedirects(self.client.get(reverse('core:dashboard')), '/login/?next=/')
 
     def test_all_pages_render_in_both_languages(self):
         names = ['dashboard', 'explore', 'recommendations', 'plan', 'skills', 'progress', 'saved',
                  'assistant', 'profile', 'settings']
         for lang in ('uk', 'en'):
-            self.client.get(reverse('set_lang', args=[lang]))
+            self.client.get(reverse('core:set_lang', args=[lang]))
             for n in names:
-                self.assertEqual(self.client.get(reverse(n)).status_code, 200, (lang, n))
-            self.assertEqual(self.client.get(reverse('course', args=[2])).status_code, 200)
+                self.assertEqual(self.client.get(reverse('core:' + n)).status_code, 200, (lang, n))
+            self.assertEqual(self.client.get(reverse('core:course', args=[2])).status_code, 200)
 
     def test_language_switch_changes_text(self):
-        self.client.get(reverse('set_lang', args=['en']))
-        self.assertContains(self.client.get(reverse('dashboard')), 'Recommendations')
+        self.client.get(reverse('core:set_lang', args=['en']))
+        self.assertContains(self.client.get(reverse('core:dashboard')), 'Recommendations')
 
     def test_filters_and_search(self):
-        r = self.client.get(reverse('explore'), {'cat': 'db'})
+        r = self.client.get(reverse('core:explore'), {'cat': 'db'})
         self.assertEqual(len(r.context['recs']), 1)  # фільтр за категорією: лише «SQL і проєктування БД»
-        r = self.client.get(reverse('explore'), {'q': 'pandas'})
+        r = self.client.get(reverse('core:explore'), {'q': 'pandas'})
         self.assertEqual(len(r.context['recs']), 1)
 
     def test_task_toggle_updates_progress(self):
         module = Module.objects.filter(course__title_en='SQL & Database Design').first()
-        r = self.client.post(reverse('task_toggle', args=[module.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        r = self.client.post(reverse('core:task_toggle', args=[module.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(r.json()['done'], True)
         self.assertEqual(ModuleProgress.objects.filter(module=module).count(), 1)
-        r = self.client.post(reverse('task_toggle', args=[module.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        r = self.client.post(reverse('core:task_toggle', args=[module.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(r.json()['done'], False)
 
     def test_save_toggle(self):
-        r = self.client.post(reverse('save_toggle', args=[1]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        r = self.client.post(reverse('core:save_toggle', args=[1]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertTrue(r.json()['saved'])
 
     def test_profile_requires_interest(self):
-        r = self.client.post(reverse('profile'), {'display_name': 'X'}, follow=True)
+        r = self.client.post(reverse('core:profile'), {'display_name': 'X'}, follow=True)
         self.assertContains(r, 'js-msg')
         self.assertEqual(Profile.objects.get(user=self.user).interests.count(), 3)
 
     def test_register_creates_profile_and_empty_state(self):
         self.client.logout()
-        r = self.client.post(reverse('register'), {'username': 'newbie', 'password1': 'Str0ngPass!', 'password2': 'Str0ngPass!'})
-        self.assertRedirects(r, reverse('profile'))
+        r = self.client.post(reverse('core:register'), {'username': 'newbie', 'password1': 'Str0ngPass!', 'password2': 'Str0ngPass!'})
+        self.assertRedirects(r, reverse('core:profile'))
         user = User.objects.get(username='newbie')
         self.assertTrue(hasattr(user, 'profile'))
-        self.assertContains(self.client.get(reverse('recommendations')), 'c em')
+        self.assertContains(self.client.get(reverse('core:recommendations')), 'c em')
 
     def test_assistant_and_stats(self):
-        r = self.client.post(reverse('assistant_ask'), '{"q": "2"}', content_type='application/json')
+        r = self.client.post(reverse('core:assistant_ask'), '{"q": "2"}', content_type='application/json')
         self.assertIn('answer', r.json())
         self.assertGreaterEqual(services.streak(self.user), 0)

@@ -7,7 +7,7 @@
   <div class="c"><h3>{{ r.us.skill.name }}</h3>
     <div class="bar"><i style="width:{{ r.us.cur_pct }}%"></i><u style="left:{{ r.us.want_pct }}%"></u></div>
     <p class="mu">{{ r.us.current_level }} → {{ r.us.desired_level }} · {% t 'gapL' %}: {{ r.us.gap }}</p>
-    {% if r.best %}<div class="ac"><a class="b o" href="{% url 'course' r.best.id %}">{% t 'closeBy' r.best.title %}</a></div>{% endif %}
+    {% if r.best %}<div class="ac"><a class="b o" href="{% url 'core:course' r.best.id %}">{% t 'closeBy' r.best.title %}</a></div>{% endif %}
   </div>
 {% endfor %}
 </div>
