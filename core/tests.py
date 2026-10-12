@@ -166,6 +166,17 @@ class WidgetTests(BaseTest):
         r = self.client.get(reverse('core:assistant'))
         self.assertContains(r, 'js-q')
 
+    def test_widget_panel_can_be_closed(self):
+        """Панель віджета ховається атрибутом hidden (CSS не має його перебивати)."""
+        import pathlib
+        from django.contrib.staticfiles import finders
+        r = self.client.get(reverse('core:dashboard'))
+        self.assertContains(r, 'id="agw-panel" hidden')      # на старті закрита
+        self.assertContains(r, 'id="agw-close"')             # є кнопка закриття
+        self.assertContains(r, 'aria-expanded="false"')       # fab у стані «закрито»
+        css = pathlib.Path(finders.find('core/css/styles.css')).read_text(encoding='utf-8')
+        self.assertIn('[hidden]{display:none!important}', css)
+
 
 class RoutingTests(BaseTest):
     """Маршрутизація: namespace core, generic views, жодного зайвого редіректу."""
