@@ -1,0 +1,9 @@
+{% load ui %}<article class="c cc">
+  <a class="th" href="{% url 'course' rec.course.id %}">{% cover rec.course %}</a>
+  <div class="mt"><span class="tg">{{ rec.course.category.name }}</span><span class="tg">{{ rec.course.level|level_name }}</span><span>{% icon 'clock' %} {{ rec.course.duration_hours }} {% t 'hrs' %} · {% t rec.course.format %}</span></div>
+  <h3>{{ rec.course.title }}</h3>
+  <div class="mt">{% for s in rec.course.skill_list %}<span class="tg2">+ {{ s.name }}</span>{% endfor %}</div>
+  <div class="mb" title="{% t 'matchNote' %}"><b>{{ rec.score }}%</b> {% t 'match' %}</div>
+  <p class="wy">{% why rec %}</p>
+  <div class="ac"><a class="b" href="{% url 'course' rec.course.id %}">{% t 'details' %}</a>{% include 'core/_save_btn.html' with course=rec.course %}</div>
+</article>

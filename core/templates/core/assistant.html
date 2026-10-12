@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}{% load ui %}
+{% block heading %}{% t 'assistant' %}{% endblock %}
+{% block content %}
+<p class="mu">{% t 'asstNote' %}</p>
+<div class="c chat" id="chat" style="margin-top:12px"></div>
+<div class="chips" style="margin:12px 0">{% for v, l in questions %}<button type="button" class="chip js-q" data-q="{{ v }}">{{ l }}</button>{% endfor %}</div>
+<div class="ac">{% t 'ask' as ph %}<input id="ai" type="text" placeholder="{{ ph }}"><button type="button" class="b" id="send">{% t 'send' %}</button></div>
+<div id="chat-cfg" data-url="{% url 'assistant_ask' %}" hidden></div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'core/base.html' %}{% load ui %}
+{% block heading %}{% t 'plan' %}{% endblock %}
+{% block content %}
+{% if items %}
+<div class="g g2">
+{% for it in items %}
+  <div class="c tl"><span class="tg">{% t 'ms' forloop.counter %}</span><h3>{{ it.course.title }}</h3>
+    <p class="mu">{% t 'est' it.course.duration_hours it.weeks %}</p>
+    <div class="bar"><i id="bar-{{ it.course.id }}" style="width:{{ it.pct }}%"></i></div>
+    {% for m, done in it.modules %}<label class="tk"><input type="checkbox" class="js-task" data-url="{% url 'task_toggle' m.id %}" {% if done %}checked{% endif %}> {{ m.title }}</label>{% endfor %}
+  </div>
+{% endfor %}
+</div>
+{% else %}
+<div class="c em"><div class="si">{% icon 'list' %}</div><p>{% t 'planEmpty' %}</p><a class="b" href="{% url 'explore' %}">{% t 'explore' %}</a></div>
+{% endif %}
+{% endblock %}

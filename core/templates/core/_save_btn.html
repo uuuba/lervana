@@ -1,0 +1,1 @@
+{% load ui %}<button type="button" class="b o js-save {% if course.id in saved_ids %}sv{% endif %}" data-url="{% url 'save_toggle' course.id %}" aria-pressed="{% if course.id in saved_ids %}true{% else %}false{% endif %}">{% icon 'bookmark' %} <span>{% if course.id in saved_ids %}{% t 'unsave' %}{% else %}{% t 'save' %}{% endif %}</span></button>

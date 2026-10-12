@@ -1,0 +1,37 @@
+{% load static ui %}<!DOCTYPE html>
+<html lang="{{ LANG }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learnova</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('ln-t')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+</head>
+<body>
+<div id="auth">
+  <div class="lang">
+    <a class="ib" href="{% url 'set_lang' 'uk' %}" aria-pressed="{% if LANG == 'uk' %}true{% else %}false{% endif %}">UA</a>
+    <a class="ib" href="{% url 'set_lang' 'en' %}" aria-pressed="{% if LANG == 'en' %}true{% else %}false{% endif %}">EN</a>
+  </div>
+  <div class="box">
+    <div class="logo"><i>{% icon 'spark' %}</i>Learnova</div>
+    <p class="mu">{% t 'tag' %}</p>
+    <h1 style="margin-top:16px">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      {% for f in form %}<label>{{ f.label }}{{ f }}</label>{{ f.errors }}{% endfor %}
+      {{ form.non_field_errors }}
+      <button class="b" style="width:100%;margin-top:18px;justify-content:center">{% if mode == 'login' %}{% t 'login' %}{% else %}{% t 'reg' %}{% endif %}</button>
+    </form>
+    {% if mode == 'login' %}
+      <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'register' %}">{% t 'toReg' %}</a>
+    {% else %}
+      <a class="lk" style="text-align:center;margin-top:12px" href="{% url 'login' %}">{% t 'toLog' %}</a>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>
