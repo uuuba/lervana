@@ -7,7 +7,7 @@ from django.views.generic import TemplateView, UpdateView
 from .. import i18n, recommender, services
 from ..forms import ProfileForm
 from ..models import Course, Notification, Profile
-from .base import PageView, SavedIdsMixin
+from .base import LoginRequiredMixin, PageView, SavedIdsMixin
 
 tr = i18n.tr
 
@@ -96,7 +96,7 @@ class ProgressView(PageView):
         return ctx
 
 
-class ProfileView(UpdateView):
+class ProfileView(LoginRequiredMixin, UpdateView):
     """Профіль: класичний UpdateView із ModelForm (інтереси, мета, рівні)."""
     model = Profile
     form_class = ProfileForm

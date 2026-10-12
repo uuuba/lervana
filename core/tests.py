@@ -183,3 +183,14 @@ class RoutingTests(BaseTest):
         for name in ('DashboardView', 'ExploreView', 'CourseDetailView', 'ProfileView',
                      'AssistantAskView', 'RegisterView'):
             self.assertTrue(issubclass(getattr(views, name), View), name)
+
+    def test_anonymous_pages_redirect_to_login(self):
+        """Жодна «внутрішня» сторінка не падає й не віддає 500 анонімному гостю."""
+        self.client.logout()
+        names = ('dashboard', 'explore', 'recommendations', 'saved', 'plan', 'skills', 'progress',
+                 'assistant', 'profile', 'settings')
+        for n in names:
+            r = self.client.get(reverse('core:' + n))
+            self.assertEqual(r.status_code, 302, n)
+            self.assertIn('/login/', r.headers['Location'], n)
+        self.assertEqual(self.client.get(reverse('core:course', args=[1])).status_code, 302)
