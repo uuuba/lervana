@@ -3,3 +3,6 @@ __pycache__/
 db.sqlite3
 .venv/
 venv/
+
+# секрети з'єднання з БД (приклад — config/local_settings.py.example)
+config/local_settings.py

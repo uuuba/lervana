@@ -1,6 +1,14 @@
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Секрети з'єднання з БД лежать у config/local_settings.py (у .gitignore)
+# або підставляються зі змінних середовища: DB_USER / DB_PASSWORD / DB_NAME / ...
+try:
+    from .local_settings import DB_NAME as _DB_NAME, DB_PASSWORD as _DB_PASSWORD, DB_USER as _DB_USER
+except ImportError:  # локального файлу немає — беремо значення за замовчуванням/env
+    _DB_NAME, _DB_PASSWORD, _DB_USER = 'learnova', '', 'learnova'
 
 SECRET_KEY = 'dev-only-change-me-in-production'
 DEBUG = True
@@ -43,7 +51,25 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
+DATABASES = {
+    # Learnova повністю на MySQL 8 (InnoDB, utf8mb4). Драйвер — PyMySQL (див. config/__init__.py).
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', _DB_NAME),
+        'USER': os.environ.get('DB_USER', _DB_USER),
+        'PASSWORD': os.environ.get('DB_PASSWORD', _DB_PASSWORD),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
+        'CONN_MAX_AGE': 60,                       # тримає пул з'єднань між запитами
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'connect_timeout': 10,
+        },
+        'ATOMIC_REQUESTS': True,                  # кожен HTTP-запит = одна транзакція
+        'TEST': {'NAME': 'test_learnova', 'CHARSET': 'utf8mb4', 'COLLATION': 'utf8mb4_unicode_ci'},
+    },
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 6}},

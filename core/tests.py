@@ -14,6 +14,10 @@ class BaseTest(TestCase):
         call_command('seed_demo', verbosity=0)
         self.user = User.objects.get(username='demo')
         self.client.login(username='demo', password='demo12345')
+        # MySQL після rollback у тестах НЕ відкочує AUTO_INCREMENT, тому pk
+        # курсів не фіксовані — беремо реальні id, створені seed_demo
+        ids = list(Course.objects.order_by('id').values_list('id', flat=True))
+        self.course1, self.course2 = ids[0], ids[1]
 
 
 class RecommenderTests(BaseTest):
@@ -47,7 +51,7 @@ class ViewTests(BaseTest):
             self.client.get(reverse('core:set_lang', args=[lang]))
             for n in names:
                 self.assertEqual(self.client.get(reverse('core:' + n)).status_code, 200, (lang, n))
-            self.assertEqual(self.client.get(reverse('core:course', args=[2])).status_code, 200)
+            self.assertEqual(self.client.get(reverse('core:course', args=[self.course2])).status_code, 200)
 
     def test_language_switch_changes_text(self):
         self.client.get(reverse('core:set_lang', args=['en']))
@@ -68,7 +72,7 @@ class ViewTests(BaseTest):
         self.assertEqual(r.json()['done'], False)
 
     def test_save_toggle(self):
-        r = self.client.post(reverse('core:save_toggle', args=[1]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        r = self.client.post(reverse('core:save_toggle', args=[self.course1]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertTrue(r.json()['saved'])
 
     def test_profile_requires_interest(self):
@@ -153,7 +157,7 @@ class WidgetTests(BaseTest):
         for n in names:
             r = self.client.get(reverse('core:' + n))
             self.assertContains(r, 'id="agentw"', msg_prefix=n)
-        self.assertContains(self.client.get(reverse('core:course', args=[2])), 'id="agentw"')
+        self.assertContains(self.client.get(reverse('core:course', args=[self.course2])), 'id="agentw"')
 
     def test_widget_on_auth_pages(self):
         self.client.logout()
@@ -204,4 +208,4 @@ class RoutingTests(BaseTest):
             r = self.client.get(reverse('core:' + n))
             self.assertEqual(r.status_code, 302, n)
             self.assertIn('/login/', r.headers['Location'], n)
-        self.assertEqual(self.client.get(reverse('core:course', args=[1])).status_code, 302)
+        self.assertEqual(self.client.get(reverse('core:course', args=[self.course1])).status_code, 302)

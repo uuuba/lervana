@@ -1,0 +1,9 @@
+# Скопіюй цей файл у config/local_settings.py і впиши туди справжні значення.
+# config/local_settings.py входить у .gitignore — у репозиторій він не потрапить.
+#
+# Значення можна також передати зі змінних середовища (вони мають пріоритет):
+#   DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+
+DB_NAME = 'learnova'
+DB_USER = 'learnova'
+DB_PASSWORD = 'change-me'

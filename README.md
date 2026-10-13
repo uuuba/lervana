@@ -9,9 +9,9 @@
 cd learnova
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py seed_demo          # довідники, 8 курсів, база знань агента, демо-користувач
+pip install -r requirements.txt          # Django 5.2 LTS + PyMySQL
+python manage.py migrate                 # створює таблиці у MySQL
+python manage.py seed_demo               # довідники, 8 курсів, база знань агента, демо-користувач
 python manage.py runserver
 ```
 
@@ -19,7 +19,58 @@ python manage.py runserver
 (або зареєструвати нового користувача — тоді побачите порожні стани й онбординг).
 Адмінка: `python manage.py createsuperuser`, далі http://127.0.0.1:8000/admin/ — там можна додавати курси, модулі, передумови **та записи бази знань агента**.
 
-Тести: `python manage.py test core` (26 тестів: рекомендатор, фільтри, прогрес, реєстрація, мови, generic views, «ШІ-агент», віджет на сторінках і його закриття, редірект для анонімів).
+Тести: `python manage.py test core` (26 тестів: рекомендатор, фільтри, прогрес, реєстрація, мови, generic views, «ШІ-агент», віджет на сторінках і його закриття, редірект для анонімів). Тести виконуються на MySQL: Django сам створює і знищує тестову базу `test_learnova`.
+
+## База даних: MySQL 8 (InnoDB, utf8mb4)
+
+Learnova працює **тільки з MySQL** — SQLite більше не використовується (старий `db.sqlite3` можна видалити).
+Потрібен MySQL Server 8.0.11+.
+
+> Важливо про версії: Django 6.x вимагає MySQL **8.4+**, тому в `requirements.txt` зафіксовано
+> **Django 5.2 LTS** (підтримка до 04.2028) — остання версія, що офіційно підтримує MySQL 8.0.
+> Якщо плануєте оновити Django до 6.x — спершу оновіть сервер MySQL до 8.4+.
+
+### 1. Створіть базу та користувача застосунку (від `root`)
+
+```sql
+CREATE DATABASE learnova CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'learnova'@'localhost'   IDENTIFIED BY 'learnova_app_2026';
+CREATE USER 'learnova'@'127.0.0.1'   IDENTIFIED BY 'learnova_app_2026';
+GRANT ALL PRIVILEGES ON `learnova`.*      TO 'learnova'@'localhost';
+GRANT ALL PRIVILEGES ON `learnova`.*      TO 'learnova'@'127.0.0.1';
+-- тестова база для `manage.py test`:
+GRANT ALL PRIVILEGES ON `test\_learnova`.* TO 'learnova'@'localhost';
+GRANT ALL PRIVILEGES ON `test\_learnova`.* TO 'learnova'@'127.0.0.1';
+FLUSH PRIVILEGES;
+```
+
+### 2. Реквізити зʼєднання
+
+Покладіть їх у `config/local_settings.py` (файл у `.gitignore`, у репозиторій не потрапляє):
+
+```python
+DB_NAME = 'learnova'
+DB_USER = 'learnova'
+DB_PASSWORD = 'learnova_app_2026'
+```
+
+Шаблон — `config/local_settings.py.example`. Натомість можна задати змінні середовища
+`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` — вони мають пріоритет над файлом.
+
+### 3. Драйвер
+
+Драйвер — **PyMySQL** (чистий Python, без компіляції): `config/__init__.py` викликає
+`pymysql.install_as_MySQLdb()`, тож `mysqlclient` на Windows збирати не треба.
+
+### Налаштування у `config/settings.py`
+
+`ENGINE: django.db.backends.mysql`, `charset=utf8mb4`, `sql_mode=STRICT_TRANS_TABLES`,
+`CONN_MAX_AGE=60` (пул зʼєднань), `ATOMIC_REQUESTS=True` (кожен HTTP-запит — одна транзакція),
+тестова база `test_learnova` з колацією `utf8mb4_unicode_ci`.
+
+Перенести дані зі старого `db.sqlite3`: найпростіше ще раз запустити `python manage.py seed_demo`
+(сценарій ідемпотентний). Дамп/відновлення через `dumpdata`/`loaddata` теж працює, але потребує
+тимчасового перемикання `settings` на SQLite.
 
 ## Структура
 

@@ -1,1 +1,5 @@
-Django>=5.1
+# Django 5.2 LTS — остання версія, що підтримує MySQL 8.0
+# (Django 6.x вимагає MySQL 8.4+; на цій машині MySQL Server 8.0.46)
+Django>=5.2,<6.0
+# драйвер MySQL для Windows без компіляції (див. config/__init__.py)
+PyMySQL>=1.1
