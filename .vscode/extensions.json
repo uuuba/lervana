@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-django",
+    "bierner.markdown-mermaid",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-mysql"
+  ]
+}

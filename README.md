@@ -103,6 +103,7 @@ core/
   static/core/              css/styles.css, js/app.js, img/covers, img/avatars
   management/commands/seed_demo.py
 docs/ERD.md, docs/schema.sql   ERD (Mermaid) і SQL-скрипти створення таблиць
+docs/ERD.mwb                   модель бази для MySQL Workbench (ER-діаграма всіх 28 таблиць)
 ```
 
 ## Маршрутизація та generic views
@@ -159,7 +160,7 @@ API:
 
 ## Відповідність розділам звіту
 
-- **1.2 Проєктування БД:** `docs/ERD.md` (діаграма), `docs/schema.sql` (SQL), `core/models.py` (обмеження та індекси — міграція `0002`).
+- **1.2 Проєктування БД:** `docs/ERD.md` (діаграма), `docs/ERD.mwb` (модель у MySQL Workbench), `docs/schema.sql` (SQL), `core/models.py` (обмеження та індекси — міграція `0002`).
 - **1.3 Програмна реалізація:** `core/recommender.py`, `core/services.py`, `core/agent.py`, `core/views/` (generic views), `core/templatetags/ui.py`, `core/signals.py`.
 - **1.4 Контрольний приклад:** вхід → профіль (інтереси, рівні) → рекомендації → сторінка курсу → «Почати» → план (відмітки модулів) → прогрес і навички → запитання «ШІ-агенту» у віджеті. Скріншоти робіть після `seed_demo` (демо-користувач) та зі свіжозареєстрованим акаунтом (порожні стани).
 

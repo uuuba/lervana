@@ -2,6 +2,13 @@
 
 Діаграму можна відкрити у будь-якому Mermaid-рендері (GitHub, VS Code, mermaid.live) і додати до звіту як зображення.
 
+> У цій же теці лежить **`docs/ERD.mwb`** — готова модель тієї ж бази для **MySQL Workbench**
+> (усі 28 таблиць, звʼязки FK та ER-діаграма). Відкриється подвійним кліком або через
+> Workbench → *File → Open Model*.
+> У VS Code модель не відкривається (це бінарний формат Workbench) — там користуйтесь
+> Mermaid-блоком нижче: розгорніть попередній перегляд Markdown
+> (розширення *Markdown Preview Mermaid Support*; підказки є у `.vscode/extensions.json`).
+
 ```mermaid
 erDiagram
     USER ||--|| PROFILE : "має"
