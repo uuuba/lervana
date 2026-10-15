@@ -104,6 +104,7 @@ core/
   management/commands/seed_demo.py
 docs/ERD.md, docs/schema.sql   ERD (Mermaid) і SQL-скрипти створення таблиць
 docs/ERD.mwb                   модель бази для MySQL Workbench (ER-діаграма всіх 28 таблиць)
+database/learnova.sql          повний дамп бази MySQL (схема + демо-дані) + інструкція відновлення
 ```
 
 ## Маршрутизація та generic views
